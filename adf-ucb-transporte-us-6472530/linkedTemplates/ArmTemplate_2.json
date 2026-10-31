@@ -1465,7 +1465,7 @@
 						"     mapColumn(",
 						"          VehiculoId,",
 						"          Placa,",
-						"          TipoVehiculo = CapacidadEfectiva,",
+						"          TipoVehiculo,",
 						"          CapacidadEfectiva,",
 						"          VigenciaDesde,",
 						"          VigenciaHasta,",
@@ -1578,7 +1578,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/df_incidenteRuta')]",
+			"name": "[concat(parameters('factoryName'), '/df_silver_incidenteRuta')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -2488,7 +2488,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "df_incidenteRuta",
+								"referenceName": "df_silver_incidenteRuta",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
@@ -2517,7 +2517,7 @@
 				"[concat(variables('factoryId'), '/dataflows/df_silver_incidentes')]",
 				"[concat(variables('factoryId'), '/dataflows/df_silver_viajes')]",
 				"[concat(variables('factoryId'), '/dataflows/df_silver_demanda_paradas')]",
-				"[concat(variables('factoryId'), '/dataflows/df_incidenteRuta')]"
+				"[concat(variables('factoryId'), '/dataflows/df_silver_incidenteRuta')]"
 			]
 		}
 	]
