@@ -202,7 +202,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_incidenteRuta",
+						"referenceName": "df_silver_incidenteRuta",
 						"type": "DataFlowReference"
 					},
 					"compute": {

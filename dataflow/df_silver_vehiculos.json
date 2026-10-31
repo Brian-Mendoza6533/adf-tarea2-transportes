@@ -85,7 +85,7 @@
 				"     mapColumn(",
 				"          VehiculoId,",
 				"          Placa,",
-				"          TipoVehiculo = CapacidadEfectiva,",
+				"          TipoVehiculo,",
 				"          CapacidadEfectiva,",
 				"          VigenciaDesde,",
 				"          VigenciaHasta,",
