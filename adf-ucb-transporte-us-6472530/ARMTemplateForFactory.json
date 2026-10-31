@@ -4007,10 +4007,13 @@
 							"name": "derivedColumn1"
 						},
 						{
-							"name": "derivedColumn2"
+							"name": "derivedColumn3"
 						},
 						{
-							"name": "derivedColumn3"
+							"name": "split1"
+						},
+						{
+							"name": "derivedColumn4"
 						}
 					],
 					"scriptLines": [
@@ -4034,11 +4037,13 @@
 						"          ParadaHistoricaId = upper(trim(ParadaHistoricaId)),",
 						"          Franja = upper(trim(Franja)),",
 						"          Metodo = upper(trim(Metodo))) ~> derivedColumn1",
-						"derivedColumn1 derive(FechaServicio = iif(instr(FechaServicio, '/') > 0, toDate(FechaServicio, 'dd/MM/yyyy'), toDate(FechaServicio, 'yyyy-MM-dd'))) ~> derivedColumn2",
-						"derivedColumn2 derive(ValidacionesTarjeta = toInteger(iif(isNull(ValidacionesTarjeta) || trim(ValidacionesTarjeta) == '', '0', ValidacionesTarjeta)),",
+						"derivedColumn4 derive(ValidacionesTarjeta = toInteger(iif(isNull(ValidacionesTarjeta) || trim(ValidacionesTarjeta) == '', '0', ValidacionesTarjeta)),",
 						"          Descensos = toInteger(iif(isNull(Descensos) || trim(Descensos) == '', '0', Descensos)),",
 						"          DemandaNoAtendida = toInteger(iif(isNull(DemandaNoAtendida) || trim(DemandaNoAtendida) == '', '0', DemandaNoAtendida))) ~> derivedColumn3",
-						"derivedColumn3 sink(allowSchemaDrift: true,",
+						"derivedColumn3 split(!isNull(FechaServicio) && !isNull(ValidacionesTarjeta) && !isNull(Descensos) && !isNull(DemandaNoAtendida),",
+						"     disjoint: false) ~> split1@(aceptados, rechazados)",
+						"derivedColumn1 derive(FechaServicio = toDate(coalesce(iif(instr(FechaServicio, '/') > 0, toString(toDate(FechaServicio, 'dd/MM/yyyy')), FechaServicio), '1900-01-01'), 'yyyy-MM-dd')) ~> derivedColumn4",
+						"split1@aceptados sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          DemandaId as string,",
