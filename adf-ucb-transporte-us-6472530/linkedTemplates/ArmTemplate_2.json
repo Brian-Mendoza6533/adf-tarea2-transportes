@@ -1684,6 +1684,9 @@
 						},
 						{
 							"name": "derivedColumn2"
+						},
+						{
+							"name": "derivedColumn3"
 						}
 					],
 					"scriptLines": [
@@ -1707,9 +1710,24 @@
 						"          VehiculoId = upper(trim(iif(isNull(VehiculoId) || trim(VehiculoId) == '' || upper(trim(VehiculoId)) == 'NULL', 'SIN_VEHICULO', VehiculoId))),",
 						"          Descripcion =      trim(iif(isNull(Descripcion) || trim(Descripcion) == '', 'SIN_DESCRIPCION', Descripcion))) ~> derivedColumn1",
 						"derivedColumn1 derive(FechaHoraInicio =      toTimestamp(iif(instr(FechaHoraInicio, 'T') > 0, substring(FechaHoraInicio, 1, 19), iif(instr(FechaHoraInicio, '/') > 0, toString(toDate(FechaHoraInicio, 'dd/MM/yyyy')), iif(instr(FechaHoraInicio, ' ') > 0, substring(FechaHoraInicio, 1, 19), '1900-01-01 00:00:00'))), 'yyyy-MM-dd HH:mm:ss'),",
-						"          FechaHoraFin =      toTimestamp(iif(instr(FechaHoraFin, 'T') > 0, substring(FechaHoraFin, 1, 19), iif(instr(FechaHoraFin, '/') > 0, toString(toDate(FechaHoraFin, 'dd/MM/yyyy')), iif(instr(FechaHoraFin, ' ') > 0, substring(FechaHoraFin, 1, 19), '1900-01-01 00:00:00'))), 'yyyy-MM-dd HH:mm:ss'),",
-						"          FechaHoraRegistro = toTimestamp(iif(isNull(FechaHoraRegistro) || trim(FechaHoraRegistro) == '' || instr(FechaHoraRegistro, 'T') > 0, '1900-01-01 00:00:00', iif(instr(FechaHoraRegistro, '/') > 0, concat(toString(toDate(FechaHoraRegistro, 'dd/MM/yyyy')), ' 00:00:00'), concat(FechaHoraRegistro, ' 00:00:00'))), 'yyyy-MM-dd HH:mm:ss')) ~> derivedColumn2",
-						"derivedColumn2 sink(allowSchemaDrift: true,",
+						"          FechaHoraFin =      toTimestamp(iif(instr(FechaHoraFin, 'T') > 0, substring(FechaHoraFin, 1, 19), iif(instr(FechaHoraFin, '/') > 0, toString(toDate(FechaHoraFin, 'dd/MM/yyyy')), iif(instr(FechaHoraFin, ' ') > 0, substring(FechaHoraFin, 1, 19), '1900-01-01 00:00:00'))), 'yyyy-MM-dd HH:mm:ss')) ~> derivedColumn2",
+						"derivedColumn2 derive(FechaHoraRegistro = iif(\r",
+						"  isNull(FechaHoraRegistro) || trim(FechaHoraRegistro) == '',\r",
+						"  toTimestamp('1900-01-01 00:00:00', 'yyyy-MM-dd HH:mm:ss'),\r",
+						"  toTimestamp(\r",
+						"    iif(\r",
+						"      instr(FechaHoraRegistro, '/') > 0, \r",
+						"      toString(toDate(FechaHoraRegistro, 'dd/MM/yyyy')), \r",
+						"      iif(\r",
+						"        instr(FechaHoraRegistro, 'T') > 0, \r",
+						"        toString(toDate(substring(FechaHoraRegistro, 1, 10), 'yyyy-MM-dd')), \r",
+						"        FechaHoraRegistro\r",
+						"      )\r",
+						"    ), \r",
+						"    'yyyy-MM-dd HH:mm:ss'\r",
+						"  )\r",
+						")) ~> derivedColumn3",
+						"derivedColumn3 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          IncidenteId as string,",
