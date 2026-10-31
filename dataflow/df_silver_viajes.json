@@ -1,0 +1,99 @@
+{
+	"name": "df_silver_viajes",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "dw_bronze_viajes_sql",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dw_silver_viajes_sql",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ViajeId as string,",
+				"          RutaHistoricaId as string,",
+				"          VehiculoId as string,",
+				"          FechaServicio as string,",
+				"          HoraProgramada as string,",
+				"          HoraSalida as string,",
+				"          HoraLlegada as string,",
+				"          ValidacionesTarjeta as string,",
+				"          KmRecorridos as string,",
+				"          EstadoViaje as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source1",
+				"source1 derive(ViajeId = iif(isNull(ViajeId) || trim(ViajeId) == '', 'ERROR_ID', trim(ViajeId)),",
+				"          RutaHistoricaId = iif(isNull(RutaHistoricaId) || trim(RutaHistoricaId) == '' || upper(trim(RutaHistoricaId)) == 'NULL', 'ERROR_ID', upper(substring(trim(RutaHistoricaId), 1, 5))),",
+				"          VehiculoId = iif(isNull(VehiculoId) || trim(VehiculoId) == '' || upper(trim(VehiculoId)) == 'NULL', 'SIN_VEHICULO', upper(trim(VehiculoId))),",
+				"          FechaServicio = iif(isNull(FechaServicio) || trim(FechaServicio) == '', toDate('1900-01-01'), iif(instr(FechaServicio, '/') > 0, toDate(trim(FechaServicio), 'dd/MM/yyyy'), iif(instr(FechaServicio, 'T') > 0, toDate(substring(trim(FechaServicio), 1, 10), 'yyyy-MM-dd'), iif(instr(FechaServicio, '-') > 0, toDate(trim(FechaServicio), 'yyyy-MM-dd'), addDays(toDate('1899-12-30'), toInteger(trim(FechaServicio))))))),",
+				"          HoraProgramada = toTimestamp(iif(isNull(HoraProgramada) || trim(HoraProgramada) == '', '1900-01-01 00:00:00', iif(instr(HoraProgramada, 'T') > 0, concat('1900-01-01 ', substring(trim(HoraProgramada), 12, 8)), iif(instr(HoraProgramada, ' ') > 0, concat('1900-01-01 ', substring(trim(HoraProgramada), 12, 8)), concat('1900-01-01 ', trim(HoraProgramada))))), 'yyyy-MM-dd HH:mm:ss')) ~> derivedColumn1",
+				"derivedColumn1 derive(HoraSalida = toTimestamp(iif(isNull(HoraSalida) || trim(HoraSalida) == '', '1900-01-01 00:00:00', iif(instr(HoraSalida, 'T') > 0, concat('1900-01-01 ', substring(trim(HoraSalida), 12, 8)), iif(instr(HoraSalida, ' ') > 0, concat('1900-01-01 ', substring(trim(HoraSalida), 12, 8)), concat('1900-01-01 ', trim(HoraSalida))))), 'yyyy-MM-dd HH:mm:ss'),",
+				"          HoraLlegada = toTimestamp(iif(isNull(HoraLlegada) || trim(HoraLlegada) == '', '1900-01-01 00:00:00', iif(instr(HoraLlegada, 'T') > 0, concat('1900-01-01 ', substring(trim(HoraLlegada), 12, 8)), iif(instr(HoraLlegada, ' ') > 0, concat('1900-01-01 ', substring(trim(HoraLlegada), 12, 8)), concat('1900-01-01 ', trim(HoraLlegada))))), 'yyyy-MM-dd HH:mm:ss'),",
+				"          ValidacionesTarjeta = iif(isNull(ValidacionesTarjeta) || trim(ValidacionesTarjeta) == '' || upper(trim(ValidacionesTarjeta)) == 'NULL', toInteger(0), toInteger(trim(ValidacionesTarjeta))),",
+				"          KmRecorridos = iif(isNull(KmRecorridos) || trim(KmRecorridos) == '' || upper(trim(KmRecorridos)) == 'NULL', toDecimal(0, 8, 1), toDecimal(replace(trim(KmRecorridos), ',', '.'), 8, 1)),",
+				"          EstadoViaje = iif(isNull(EstadoViaje) || trim(EstadoViaje) == '' || upper(trim(EstadoViaje)) == 'NULL', 'DESCONOCIDO', upper(trim(EstadoViaje)))) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ViajeId as string,",
+				"          RutaHistoricaId as string,",
+				"          VehiculoId as string,",
+				"          FechaServicio as date,",
+				"          HoraProgramada as timestamp,",
+				"          HoraSalida as timestamp,",
+				"          HoraLlegada as timestamp,",
+				"          ValidacionesTarjeta as integer,",
+				"          KmRecorridos as decimal(8,1),",
+				"          EstadoViaje as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          ViajeId,",
+				"          RutaHistoricaId,",
+				"          VehiculoId,",
+				"          FechaServicio,",
+				"          HoraProgramada,",
+				"          HoraSalida,",
+				"          HoraLlegada,",
+				"          ValidacionesTarjeta,",
+				"          KmRecorridos,",
+				"          EstadoViaje",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
