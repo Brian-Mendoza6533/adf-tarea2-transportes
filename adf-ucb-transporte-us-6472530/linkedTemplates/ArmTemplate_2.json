@@ -1516,6 +1516,9 @@
 						},
 						{
 							"name": "derivedColumn4"
+						},
+						{
+							"name": "aggregate1"
 						}
 					],
 					"scriptLines": [
@@ -1545,7 +1548,16 @@
 						"derivedColumn3 split(!isNull(FechaServicio) && !isNull(ValidacionesTarjeta) && !isNull(Descensos) && !isNull(DemandaNoAtendida),",
 						"     disjoint: false) ~> split1@(aceptados, rechazados)",
 						"derivedColumn1 derive(FechaServicio = toDate(coalesce(iif(instr(FechaServicio, '/') > 0, toString(toDate(FechaServicio, 'dd/MM/yyyy')), FechaServicio), '1900-01-01'), 'yyyy-MM-dd')) ~> derivedColumn4",
-						"split1@aceptados sink(allowSchemaDrift: true,",
+						"split1@aceptados aggregate(groupBy(DemandaId),",
+						"     FechaServicio = first(FechaServicio),",
+						"          RutaHistoricaId = first(RutaHistoricaId),",
+						"          ParadaHistoricaId = first(ParadaHistoricaId),",
+						"          Franja = first(Franja),",
+						"          ValidacionesTarjeta = first(ValidacionesTarjeta),",
+						"          Descensos = first(Descensos),",
+						"          DemandaNoAtendida = first(DemandaNoAtendida),",
+						"          Metodo = first(Metodo)) ~> aggregate1",
+						"aggregate1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          DemandaId as string,",
