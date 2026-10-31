@@ -33,6 +33,9 @@
 				},
 				{
 					"name": "derivedColumn3"
+				},
+				{
+					"name": "aggregate1"
 				}
 			],
 			"scriptLines": [
@@ -58,7 +61,15 @@
 				"derivedColumn1 derive(RutaHistoricaId = upper(substring( iif(startsWith(upper(trim(RutaHistoricaId)), 'RH-'), trim(RutaHistoricaId), iif(startsWith(upper(trim(RutaHistoricaId)), 'RUTA '), concat('RH-', lpad(replace(upper(trim(RutaHistoricaId)), 'RUTA ', ''), 2, '0')), iif(startsWith(upper(trim(RutaHistoricaId)), 'R'), replace(upper(trim(RutaHistoricaId)), 'R-', 'RH-'), concat('RH-', lpad(trim(RutaHistoricaId), 2, '0'))))), 1, 5 ))) ~> derivedColumn2",
 				"derivedColumn2 derive(VigenciaDesde = toDate(iif(instr(VigenciaDesde, '/') > 0, toString(toDate(VigenciaDesde, 'dd/MM/yyyy'), 'yyyy-MM-dd'), iif(instr(VigenciaDesde, '-') > 0, VigenciaDesde, toString(addDays(toDate('1899-12-30', 'yyyy-MM-dd'), toInteger(VigenciaDesde)), 'yyyy-MM-dd'))), 'yyyy-MM-dd'),",
 				"          VigenciaHasta = toDate(iif(instr(VigenciaHasta, '/') > 0, toString(toDate(VigenciaHasta, 'dd/MM/yyyy'), 'yyyy-MM-dd'), iif(instr(VigenciaHasta, '-') > 0, VigenciaHasta, toString(addDays(toDate('1899-12-30', 'yyyy-MM-dd'), toInteger(VigenciaHasta)), 'yyyy-MM-dd'))), 'yyyy-MM-dd')) ~> derivedColumn3",
-				"derivedColumn3 sink(allowSchemaDrift: true,",
+				"derivedColumn3 aggregate(groupBy(RutaHistoricaId),",
+				"     NombreRuta = first(NombreRuta),",
+				"          CodigoRuta = first(CodigoRuta),",
+				"          Origen = first(Origen),",
+				"          Destino = first(Destino),",
+				"          VigenciaDesde = first(VigenciaDesde),",
+				"          VigenciaHasta = first(VigenciaHasta),",
+				"          Estado = first(Estado)) ~> aggregate1",
+				"aggregate1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          RutaHistoricaId as string,",
